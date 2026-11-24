@@ -42,4 +42,18 @@ docker compose exec -T backend python -m scripts.seed_demo
 
 分发计划锁定特定已签核快照，按北京时间显示。收件箱可下载真实 CSV，当前收件组是本地交接标签。停机跨过多个周期时补送最早未投递的一期，然后追到下一个将来的周期。新快照需重新签核并建新计划。
 
+## 补送更正与认账台账
+
+观测以「街区 + 抽样批次」为认账键，带更正版次（留空为第 1 版）。补送更正按原街区批次认账，抽检数/缺牌数随新版整体替换；乱序到达的旧版只留存审计不顶新版，重试入账幂等不新增批次。同一认账键同版出现两套不同数据时，该街区暂不出采购量，其余街区照常备料，汇总和 CSV 标清受影响街区。发起分析时固化当时的认账台账，历史分析按旧账算，更正后新分析按新账重算。详见[业务剧本](yangyang-business.md)。
+
+## 测试
+
+测试不依赖第三方库，用标准库 `unittest` 运行；集成测试通过 `tests/_sa_shim.py` 的 sqlite3 替身验证数据库行为（装有真 SQLAlchemy 的环境行为一致）：
+
+```sh
+cd backend
+python3 tests/test_ledger_rules.py      # 认账台账与分析算法规则（12 项）
+python3 tests/test_ledger_services.py   # 入账、快照、迁移、CSV 端到端（10 项）
+```
+
 许可证为 [MIT](LICENSE)。

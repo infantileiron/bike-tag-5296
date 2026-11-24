@@ -1,16 +1,21 @@
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.constants.enums import RunStatus
+from src.domain.ledger import DEFAULT_REVISION
 from src.models.base import Base, utc_now
 
 
 class Observation(Base):
     __tablename__ = 'observations'
+    __table_args__ = (Index('ix_observations_district_batch', 'district', 'batch'),)
     id: Mapped[int] = mapped_column(primary_key=True)
     source_key: Mapped[str] = mapped_column(String(96), unique=True)
+    district: Mapped[str] = mapped_column(String(300), default='')
+    batch: Mapped[str] = mapped_column(String(300), default='')
+    revision: Mapped[int] = mapped_column(Integer, default=DEFAULT_REVISION)
     payload: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
@@ -24,6 +29,8 @@ class AnalysisRun(Base):
     last_observation_id: Mapped[int] = mapped_column(Integer)
     sample_size: Mapped[int] = mapped_column(Integer)
     observation_ids: Mapped[list] = mapped_column(JSON)
+    # 发起时固化的那一版认账台账：更正入账后旧分析仍按旧版计算
+    ledger_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String(16), default=RunStatus.QUEUED, index=True)
     result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)

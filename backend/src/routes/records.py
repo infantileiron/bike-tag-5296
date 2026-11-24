@@ -10,6 +10,7 @@ from src.models.base import Session
 from src.models.workflow import Observation
 from src.services.auth import current_user, roles
 from src.services.errors import BusinessError
+from src.services.ledger import ledger_view
 from src.services.observations import add_observations, clean_observation, parse_csv
 from src.utils.formatting import csv_text
 
@@ -30,14 +31,22 @@ def index(offset: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100), us
         return {'total': total, 'offset': offset, 'items': [observation_view(item) for item in items]}
 
 
+@router.get('/observations/ledger')
+def ledger(user=Depends(current_user)):
+    with Session() as db:
+        return ledger_view(db)
+
+
 @router.post('/observations', status_code=201)
 def create(payload: dict, user=Depends(editor)):
     row = clean_observation(payload)
     with Session.begin() as db:
-        items = add_observations(db, [row], user['sub'], 'observation.created')
+        items, stats = add_observations(db, [row], user['sub'], 'observation.created')
         if not items:
             raise BusinessError('相同观测已存在，请核对记录', 409)
-        return observation_view(items[0])
+        body = observation_view(items[0])
+        body['stats'] = stats
+        return body
 
 
 @router.get('/observations/template')
@@ -51,8 +60,8 @@ def template(user=Depends(current_user)):
 def import_payload(payload, actor):
     rows = parse_csv(payload)
     with Session.begin() as db:
-        items = add_observations(db, rows, actor, 'observation.imported')
-        return {'added': len(items), 'skipped': len(rows) - len(items)}
+        _items, stats = add_observations(db, rows, actor, 'observation.imported')
+        return stats
 
 
 @router.post('/observations/import')

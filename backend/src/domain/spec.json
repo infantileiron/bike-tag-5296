@@ -20,6 +20,16 @@
       "type": "text"
     },
     {
+      "key": "revision",
+      "label": "更正版次",
+      "example": 1,
+      "type": "integer",
+      "min": 1,
+      "max": 100000,
+      "required": false,
+      "help": "同一街区+批次的补送更正按版次认账，留空视为第 1 版；旧版乱序到达不会覆盖新版。"
+    },
+    {
       "key": "population",
       "label": "本街区桩位总数",
       "example": 260,

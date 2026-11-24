@@ -4,7 +4,8 @@ import time
 
 from sqlalchemy import text
 
-from src.models.base import Session
+from src.migrations.online import ensure_schema
+from src.models.base import Session, engine
 from src.services.broker import redis
 from src.services.delivery import dispatch_pending
 from src.services.runs import run_pending
@@ -15,6 +16,7 @@ HEARTBEAT = 'desk:worker-alive'
 
 
 def main():
+    ensure_schema(engine)
     while True:
         try:
             with Session.begin() as db:
