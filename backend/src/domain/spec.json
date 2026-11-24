@@ -1,0 +1,58 @@
+{
+  "organization": "岑导骑行服务站标识组",
+  "tagline": "按街区的真实桩位基数订购缺失标牌",
+  "source": "街道维护桩位抽样名册及同一巡查日的无牌验收台账",
+  "record_name": "街区随机样本批",
+  "algorithm": "分层总体总量估计与无放回有限总体修正",
+  "formula": "每层桩位总数 Nh 不重复累计。按无放回随机抽样，层缺牌估计为 Nh×p̂h，总方差为各层 Nh²(1−nh/Nh)sh²/nh 之和。总体率为估计缺牌数÷总桩数，以正态近似和方差计算置信区间。",
+  "decision_prompt": "街区抽样比例不同，按哪一个数量准备补挂牌？",
+  "fields": [
+    {
+      "key": "district",
+      "label": "街区",
+      "example": "砂桥支路",
+      "type": "text"
+    },
+    {
+      "key": "batch",
+      "label": "抽样批次",
+      "example": "SJ-12-X1",
+      "type": "text"
+    },
+    {
+      "key": "population",
+      "label": "本街区桩位总数",
+      "example": 260,
+      "type": "integer",
+      "min": 1,
+      "max": 100000
+    },
+    {
+      "key": "sample",
+      "label": "本批等概率抽查桩位数",
+      "example": 18,
+      "type": "integer",
+      "min": 1,
+      "max": 100000
+    },
+    {
+      "key": "missing",
+      "label": "本批缺牌桩位数",
+      "example": 3,
+      "type": "integer",
+      "min": 0,
+      "max": 100000
+    }
+  ],
+  "parameters": [
+    {
+      "key": "confidence",
+      "label": "置信水平（%）",
+      "type": "number",
+      "min": 80,
+      "max": 99.9,
+      "default": 95,
+      "help": "普通近似区间截在可行的总体数量范围内。"
+    }
+  ]
+}
